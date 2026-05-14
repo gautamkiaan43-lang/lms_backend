@@ -1,0 +1,35 @@
+{
+  "name": "loan-backend",
+  "version": "1.0.0",
+  "description": "Production-ready backend for loan management",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node scripts/port-fixer.js && node --watch server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "seed": "node prisma/seed.js",
+    "build": "prisma generate && prisma db push",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.11.0",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.1.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^8.0.4",
+    "puppeteer": "^24.40.0",
+    "twilio": "^5.13.0"
+  },
+  "prisma": {
+    "seed": "node ./prisma/seed.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "prisma": "^5.11.0"
+  }
+}
