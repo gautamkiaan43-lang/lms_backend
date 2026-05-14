@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const prisma = require('../config/db');
+const { formatDateIN } = require('../utils/dateFormat');
 
 /**
  * Generate a PDF loan statement for a specific loan
@@ -64,7 +65,7 @@ const generateLoanStatement = async (loanId) => {
           <div class="item"><div class="label">Interest Rate:</div><div class="value">${loan.interestRate}% Monthly</div></div>
           <div class="item"><div class="label">Initiation Fee:</div><div class="value">K${Number(loan.initiationFee).toLocaleString()}</div></div>
           <div class="item"><div class="label">Currently Owed:</div><div class="value font-bold">K${Number(loan.currentPrincipal).toLocaleString()}</div></div>
-          <div class="item"><div class="label">Next Due Date:</div><div class="value">${loan.dueDate ? new Date(loan.dueDate).toLocaleDateString() : 'N/A'}</div></div>
+          <div class="item"><div class="label">Next Due Date:</div><div class="value">${loan.dueDate ? formatDateIN(loan.dueDate, 'N/A') : 'N/A'}</div></div>
         </div>
       </div>
 
@@ -83,7 +84,7 @@ const generateLoanStatement = async (loanId) => {
           <tbody>
             ${loan.payments.map(p => `
               <tr>
-                <td>${new Date(p.createdAt).toLocaleDateString()}</td>
+                <td>${formatDateIN(p.createdAt, 'N/A')}</td>
                 <td>${p.type}</td>
                 <td>K${Number(p.totalCollected).toLocaleString()}</td>
                 <td>${p.status}</td>

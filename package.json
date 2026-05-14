@@ -8,6 +8,7 @@
     "dev": "node scripts/port-fixer.js && node --watch server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
+    "prisma:push:local": "prisma db push --accept-data-loss",
     "seed": "node prisma/seed.js",
     "build": "prisma generate && prisma db push",
     "postinstall": "prisma generate"

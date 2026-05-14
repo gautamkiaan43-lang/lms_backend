@@ -67,6 +67,8 @@ model User {
   // Profile Fields
   businessName String?
   nrc          String?  @unique
+  /// Loan / credit agreement reference shown to admin instead of collecting email on paper flow
+  agreementNumber String? @unique
   dob          DateTime?
   address      String?  @db.Text
   documentUrl  String?  @db.LongText // Legacy field
@@ -77,6 +79,7 @@ model User {
   guarantorName     String?
   guarantorContact  String?
   guarantorRelation String?
+  guarantorYearsKnown String?
   internalNotes     String?  @db.Text
   documentUrls      String?  @db.LongText // Multiple documents JSON
 

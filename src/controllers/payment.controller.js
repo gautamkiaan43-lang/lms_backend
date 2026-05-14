@@ -1,5 +1,6 @@
 const paymentService = require('../services/payment.service');
 const { convertToCSV } = require('../utils/csv');
+const { formatDateIN } = require('../utils/dateFormat');
 
 const createPayment = async (req, res) => {
   console.log("[PAYMENT CREATE REQUEST]", req.body);
@@ -55,8 +56,8 @@ const exportPayments = async (req, res) => {
       status: p.status,
       method: p.method,
       trxId: p.trxId || 'N/A',
-      paidAt: p.paidAt ? new Date(p.paidAt).toLocaleDateString() : 'Pending',
-      createdAt: new Date(p.createdAt).toLocaleDateString()
+      paidAt: p.paidAt ? formatDateIN(p.paidAt) : 'Pending',
+      createdAt: formatDateIN(p.createdAt),
     }));
 
     const headers = [
