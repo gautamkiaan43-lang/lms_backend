@@ -107,6 +107,7 @@ model User {
   referralReceived      Referral? @relation("Referred")
 
   @@index([agentId])
+  @@map("user")
 }
 
 model Referral {
@@ -121,6 +122,7 @@ model Referral {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  @@map("referral")
 }
 
 model Loan {
@@ -175,6 +177,7 @@ model Loan {
   payments    Payment[]
   emiSchedules EMISchedule[]
   commissions Commission[] @relation("LoanCommissions")
+  @@map("loan")
 }
 
 model Payment {
@@ -202,6 +205,7 @@ model Payment {
   paidAt    DateTime?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+  @@map("payment")
 }
 
 model EMISchedule {
@@ -223,6 +227,7 @@ model EMISchedule {
   updatedAt       DateTime      @updatedAt
 
   @@index([loanId])
+  @@map("emischedule")
 }
 
 enum CommissionStatus {
@@ -247,6 +252,7 @@ model Payout {
   processedAt DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  @@map("payout")
 }
 
 model Commission {
@@ -265,6 +271,7 @@ model Commission {
   paymentId  Int?
   
   createdAt  DateTime         @default(now())
+  @@map("commission")
 }
 
 model Collateral {
@@ -277,6 +284,7 @@ model Collateral {
   verified  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@map("collateral")
 }
 
 // ─── Notification ───────────────────────────
@@ -298,6 +306,7 @@ model Notification {
   error     String?          @db.Text
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
+  @@map("notification")
 }
 
 // ─── Settings (System-wide config) ──────────
@@ -307,5 +316,6 @@ model Settings {
   value     String   @db.Text
   label     String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt 
+  @@map("settings")
 }
