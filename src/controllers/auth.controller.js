@@ -111,7 +111,7 @@ const login = async (req, res) => {
       success: true,
       message: 'Login successful',
       token,
-      user: { id: user.id, name: user.name, role: user.role }
+      user: { id: user.id, name: user.name, role: user.role, email: user.email }
     });
   } catch (error) {
     console.error("[AUTH LOGIN ERROR]", error.message);
@@ -123,7 +123,7 @@ const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      select: { id: true, name: true, role: true, isVerified: true, isApproved: true, status: true }
+      select: { id: true, name: true, role: true, email: true, isVerified: true, isApproved: true, status: true }
     });
 
     if (!user) {
@@ -132,7 +132,7 @@ const getMe = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user: { id: user.id, name: user.name, role: user.role.toLowerCase() }
+      user: { id: user.id, name: user.name, role: user.role.toLowerCase(), email: user.email }
     });
   } catch (error) {
     console.error("[AUTH ME ERROR]", error.message);
@@ -164,7 +164,7 @@ const quickLogin = async (req, res) => {
       success: true,
       message: 'Login successful',
       token,
-      user: { id: user.id, name: user.name, role: user.role }
+      user: { id: user.id, name: user.name, role: user.role, email: user.email }
     });
   } catch (error) {
     console.error("[AUTH QUICK-LOGIN ERROR]", error.message);
@@ -207,4 +207,86 @@ const getDemoCredentials = async (req, res) => {
   }
 };
 
-module.exports = { register, login, registerBorrower, registerAgent, getMe, quickLogin, getDemoCredentials };
+const updateProfile = async (req, res) => {
+  console.log("[AUTH UPDATE PROFILE REQUEST]", req.body);
+  try {
+    const { name, email } = req.body;
+    const userId = req.user.id;
+
+    if (!name || !email) {
+      return res.status(400).json({ success: false, message: 'Name and email are required' });
+    }
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        email,
+        id: { not: userId }
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'Email is already in use by another account' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { name, email },
+      select: { id: true, name: true, role: true, email: true }
+    });
+
+    console.log("[AUTH UPDATE PROFILE SUCCESS]", updatedUser.id);
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        role: updatedUser.role.toLowerCase(),
+        email: updatedUser.email
+      }
+    });
+  } catch (error) {
+    console.error("[AUTH UPDATE PROFILE ERROR]", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const changePassword = async (req, res) => {
+  console.log("[AUTH CHANGE PASSWORD REQUEST]");
+  try {
+    const { newPassword } = req.body;
+    const userId = req.user.id;
+
+    if (!newPassword || newPassword.trim() === '') {
+      return res.status(400).json({ success: false, message: 'New password is required' });
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword }
+    });
+
+    console.log("[AUTH CHANGE PASSWORD SUCCESS]", userId);
+    res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error) {
+    console.error("[AUTH CHANGE PASSWORD ERROR]", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  registerBorrower,
+  registerAgent,
+  getMe,
+  quickLogin,
+  getDemoCredentials,
+  updateProfile,
+  changePassword
+};

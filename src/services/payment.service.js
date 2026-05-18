@@ -288,7 +288,7 @@ const verifyPayment = async (paymentId) => {
         data: {
           userId: loan.agentId,
           title: 'Commission Earned',
-          message: `You earned a commission of K${commissionAmount.toLocaleString()} from ${loan.user.name}'s payment.`,
+          message: `You earned a commission of ₹${commissionAmount.toLocaleString()} from ${loan.user.name}'s payment.`,
           type: 'SYSTEM'
         }
       });
@@ -320,7 +320,7 @@ const verifyPayment = async (paymentId) => {
     data: {
       userId: loan.userId,
       title: 'Payment Verified',
-      message: `Your payment of K${Number(payment.totalCollected).toLocaleString()} has been verified. Type: ${payment.type}.`,
+      message: `Your payment of ₹${Number(payment.totalCollected).toLocaleString()} has been verified. Type: ${payment.type}.`,
       type: 'SYSTEM'
     }
   });
@@ -330,7 +330,7 @@ const verifyPayment = async (paymentId) => {
     data: {
       userId: loan.userId,
       title: 'Payment Verified',
-      message: `Confirmed: Your payment of K${Number(payment.totalCollected).toLocaleString()} has been processed successfully.`,
+      message: `Confirmed: Your payment of ₹${Number(payment.totalCollected).toLocaleString()} has been processed successfully.`,
       type: 'EMAIL'
     }
   });
@@ -340,7 +340,7 @@ const verifyPayment = async (paymentId) => {
     data: {
       userId: loan.userId,
       title: 'Payment Verified',
-      message: `Confirmed: Your payment of K${Number(payment.totalCollected).toLocaleString()} has been processed successfully.`,
+      message: `Confirmed: Your payment of ₹${Number(payment.totalCollected).toLocaleString()} has been processed successfully.`,
       type: 'SMS'
     }
   });

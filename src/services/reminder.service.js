@@ -21,7 +21,7 @@ const sendLoanReminders = async () => {
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // negative = before due
 
     const phone = loan.user.phone;
-    const amountStr = `K${Number(loan.principalAmount).toLocaleString()}`;
+    const amountStr = `₹${Number(loan.principalAmount).toLocaleString()}`;
 
     let msg = '';
     let title = '';

@@ -288,7 +288,7 @@ const confirmLoanFunds = async (loanId) => {
     data: {
       userId: loan.userId,
       title: 'Funds Disbursed',
-      message: `Your loan of K${Number(loan.principalAmount).toLocaleString()} is now ACTIVE. Disbursed: K${Number(loan.disbursedAmount).toLocaleString()}.`,
+      message: `Your loan of ₹${Number(loan.principalAmount).toLocaleString()} is now ACTIVE. Disbursed: ₹${Number(loan.disbursedAmount).toLocaleString()}.`,
       type: 'SYSTEM'
     }
   });
@@ -298,7 +298,7 @@ const confirmLoanFunds = async (loanId) => {
     data: {
       userId: loan.userId,
       title: 'Funds Disbursed',
-      message: `Your loan of K${Number(loan.principalAmount).toLocaleString()} is now ACTIVE. Disbursed: K${Number(loan.disbursedAmount).toLocaleString()}.`,
+      message: `Your loan of ₹${Number(loan.principalAmount).toLocaleString()} is now ACTIVE. Disbursed: ₹${Number(loan.disbursedAmount).toLocaleString()}.`,
       type: 'EMAIL'
     }
   });
@@ -308,7 +308,7 @@ const confirmLoanFunds = async (loanId) => {
     data: {
       userId: loan.userId,
       title: 'Funds Disbursed',
-      message: `Your loan of K${Number(loan.principalAmount).toLocaleString()} is now ACTIVE. Disbursed: K${Number(loan.disbursedAmount).toLocaleString()}.`,
+      message: `Your loan of ₹${Number(loan.principalAmount).toLocaleString()} is now ACTIVE. Disbursed: ₹${Number(loan.disbursedAmount).toLocaleString()}.`,
       type: 'SMS'
     }
   });

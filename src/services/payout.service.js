@@ -11,7 +11,7 @@ const requestPayout = async (agentId, amount) => {
 
   const totalAvailable = commissions.reduce((sum, c) => sum + Number(c.amount), 0);
   if (totalAvailable < Number(amount)) {
-    throw new Error('Insufficient balance. Available: K' + totalAvailable);
+    throw new Error('Insufficient balance. Available: ₹' + totalAvailable);
   }
 
   // Create payout request

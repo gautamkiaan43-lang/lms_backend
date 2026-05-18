@@ -10,6 +10,8 @@ router.post('/login', authController.login);
 router.post('/quick-login', authController.quickLogin);
 router.get('/demo-credentials/:role', authController.getDemoCredentials);
 router.get('/me', authenticate, authController.getMe);
+router.put('/update-profile', authenticate, authController.updateProfile);
+router.put('/change-password', authenticate, authController.changePassword);
 
 module.exports = router;
 // Trigger nodemon restart
