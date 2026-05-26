@@ -7,315 +7,121 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  STAFF
-  BORROWER
-  AGENT
-  LENDER
+model auditlog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  user      String
+  note      String?
+  entityId  String?
+  createdAt DateTime @default(now())
 }
 
-enum LoanStatus {
-  PENDING
-  TERMS_SET
-  TERMS_ACCEPTED
-  FUNDS_CONFIRMED
-  ACTIVE
-  REJECTED
-  COMPLETED
+model installment {
+  id        Int      @id @default(autoincrement())
+  reference String   @unique(map: "Installment_reference_key")
+  amount    Float
+  paidAmount Float   @default(0)
+  status    String   @default("PENDING")
+  dueDate   DateTime
+  loanId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  note      String?   @db.Text
+  loan      loan     @relation(fields: [loanId], references: [id], map: "Installment_loanId_fkey")
+
+  @@index([loanId], map: "Installment_loanId_fkey")
 }
 
-enum PaymentStatus {
-  PENDING
-  PAID
-  VERIFIED
-  LATE
+model loan {
+  id            Int           @id @default(autoincrement())
+  reference     String        @unique(map: "Loan_reference_key")
+  amount        Float
+  status        String        @default("pending")
+  userId        Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime @updatedAt
+  company       String
+  employeeEmail String
+  employeeName  String
+  stage         String        @default("SUBMITTED")
+  metadata      Json?
+  documentUrls  Json?
+  kickbackRate  Float?
+  discountRate  Float?
+  kickbackType  String?       @default("PERCENTAGE")
+  commissionAmount Float?      @default(0)
+  discountAmount Float?        @default(0)
+  installment   installment[]
+  user          user          @relation(fields: [userId], references: [id], map: "Loan_userId_fkey")
+
+  @@index([userId], map: "Loan_userId_fkey")
 }
 
-enum PaymentType {
-  MONTHLY_INTEREST
-  PRINCIPAL_PAYDOWN
-  PAYOFF
+model user {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique(map: "User_email_key")
+  password  String
+  name      String?
+  phone     String?
+  avatarUrl String?
+  role      String   @default("employee")
+  company   String?
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  loan      loan[]
 }
 
-enum PaymentMethod {
-  CASH
-  WIRE
-  TRX
-  MOBILE_MONEY
-  BANK_TRANSFER
-}
-
-enum Risk {
-  GREEN
-  AMBER
-  RED
-}
-
-model User {
-  id         Int      @id @default(autoincrement())
-  name       String
-  email      String   @unique
-  phone      String   @unique
-  password   String
-  role       Role     @default(BORROWER)
-  isVerified Boolean  @default(false)
-  isApproved Boolean  @default(false)
-  status     String   @default("pending_approval") // pending_approval, active, suspended
-  risk       Risk     @default(GREEN)
+model company {
+  id                    Int      @id @default(autoincrement())
+  name                  String   @unique
+  employees             Int      @default(0)
+  status                String   @default("Active")
+  creditLimit           String   @default("R 0")
+  address               String?
+  contactPeople         Json?
+  divisions             Json?
+  specimenSignatureUrl  String?  @db.LongText
+  authorizedSignatories Json?
+  kickbackRate          Float?
+  discountRate          Float?
+  kickbackType          String?  @default("PERCENTAGE")
+  commissionAmount      Float?   @default(0)
+  discountAmount        Float?   @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
   
-  // Profile Fields
-  businessName String?
-  nrc          String?  @unique
-  /// Loan / credit agreement reference shown to admin instead of collecting email on paper flow
-  agreementNumber String? @unique
-  dob          DateTime?
-  address      String?  @db.Text
-  documentUrl  String?  @db.LongText // Legacy field
-  referralCode String?  @unique
-
-  // Extension Fields
-  idProofUrl        String?  @db.LongText
-  guarantorName     String?
-  guarantorContact  String?
-  guarantorRelation String?
-  guarantorYearsKnown String?
-  internalNotes     String?  @db.Text
-  documentUrls      String?  @db.LongText // Multiple documents JSON
-
-  // Vehicle Information
-  vehicleNumber     String?
-  vehicleType       String?
-  vehicleModelYear  String?
-
-  /// Borrowing agent who referred this user (public signup with ?ref=agentId)
-  agentId   Int?
-  agent     User?      @relation("BorrowerToAgent", fields: [agentId], references: [id])
-  referredBorrowers User[] @relation("BorrowerToAgent")
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  loans                 Loan[]
-  loansAsAgent          Loan[] @relation("LoanAgent")
-  collaterals           Collateral[]
-  agentCommissions      Commission[] @relation("AgentCommissions")
-  borrowerCommissions   Commission[] @relation("BorrowerCommissions")
-  payouts               Payout[]
-  notifications         Notification[]
-  referralsMade         Referral[] @relation("Referrer")
-  referralReceived      Referral? @relation("Referred")
-
-  @@index([agentId])
-  @@map("user")
+  // Custom Fields for Employee Verification & Stats
+  approxTotalEmployees  Int      @default(0)
+  employeeNumbers       Json?
+  lastEmployeeUploadDate DateTime?
 }
 
-model Referral {
+model deductionschedule {
   id          Int      @id @default(autoincrement())
-  referrerId  Int
-  referrer    User     @relation("Referrer", fields: [referrerId], references: [id])
-  referredId  Int      @unique
-  referred    User     @relation("Referred", fields: [referredId], references: [id])
-  
-  status      String   @default("PENDING") // PENDING, QUALIFIED, REWARDED
-  rewardAmount Decimal @db.Decimal(10, 2) @default(50.00)
-  
+  company     String
+  period      String
+  frequency   String
+  fileName    String
+  status      String   @default("PENDING")
+  uploadedBy  String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  @@map("referral")
+  details     Json
 }
 
-model Loan {
-  id        Int        @id @default(autoincrement())
-  userId    Int
-  user      User       @relation(fields: [userId], references: [id])
-  agentId   Int?
-  agent     User?      @relation("LoanAgent", fields: [agentId], references: [id])
-  
-  // Financial Terms
-  principalAmount   Decimal @db.Decimal(15, 2)
-  currentPrincipal  Decimal @db.Decimal(15, 2)
-  initiationFeeRate Decimal @db.Decimal(5, 2) // %
-  initiationFee     Decimal @db.Decimal(15, 2)
-  disbursedAmount   Decimal @db.Decimal(15, 2)
-  interestRate      Decimal @db.Decimal(5, 2) // % monthly
-  
-  dueDay            Int     @default(1)
-  graceDays         Int     @default(0)
-  latePenaltyRate   Decimal @db.Decimal(5, 2) @default(5.00) // %
-  agentCommissionRate Decimal @db.Decimal(5, 2) @default(5.00) // %
-  duration          Int     @default(1) // months
-  monthlyPaymentCurrent Decimal @db.Decimal(15, 2) @default(0.00)
-
-  status    LoanStatus @default(PENDING)
-  
-  // Flow tracking
-  borrowerAcceptedTerms Boolean @default(false)
-  termsAcceptedAt       DateTime?
-  adminConfirmedFunds   Boolean @default(false)
-  fundsConfirmedAt      DateTime?
-
-  dueDate   DateTime?
-  
-  // Disbursement & Details
-  disbursementMethod String?
-  deliveryAddress    String?  @db.Text
-  whatsapp           String?
-  bankName           String?
-  accountNumber      String?
-  accountName        String?
-  description        String?  @db.Text
-
-  // Extension Fields
-  interestType        String  @default("FLAT") // FLAT, REDUCING
-  loanStartDate       DateTime?
-  penaltyAmountPerDay Decimal @db.Decimal(15, 2) @default(0.00)
-
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  payments    Payment[]
-  emiSchedules EMISchedule[]
-  commissions Commission[] @relation("LoanCommissions")
-  @@map("loan")
+model document {
+  id           Int      @id @default(autoincrement())
+  fileName     String
+  fileUrl      String   @db.VarChar(500)
+  fileType     String
+  category     String
+  uploadedBy   String
+  companyName  String?
+  employeeName String?
+  loanRef      String?
+  status       String   @default("Active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
-model Payment {
-  id        Int           @id @default(autoincrement())
-  loanId    Int
-  loan      Loan          @relation(fields: [loanId], references: [id])
-  
-  type      PaymentType   @default(MONTHLY_INTEREST)
-  
-  baseAmount      Decimal @db.Decimal(15, 2) // interest component
-  penaltyAmount   Decimal @db.Decimal(15, 2) @default(0)
-  principalPaid   Decimal @db.Decimal(15, 2) @default(0)
-  totalCollected  Decimal @db.Decimal(15, 2)
-  dueDate         DateTime?     @db.Date
-
-  lateDays    Int?
-  
-  status    PaymentStatus @default(PENDING)
-  method    PaymentMethod @default(CASH)
-  trxId     String?       @unique
-  
-  emiScheduleId Int?
-  emiSchedule   EMISchedule? @relation(fields: [emiScheduleId], references: [id])
-
-  paidAt    DateTime?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  @@map("payment")
-}
-
-model EMISchedule {
-  id              Int           @id @default(autoincrement())
-  loanId          Int
-  loan            Loan          @relation(fields: [loanId], references: [id])
-  dueDate         DateTime      @db.Date
-  amount          Decimal       @db.Decimal(15, 2)
-  principalComponent Decimal    @db.Decimal(15, 2) @default(0.00)
-  interestComponent  Decimal    @db.Decimal(15, 2) @default(0.00)
-  remainingBalance   Decimal    @db.Decimal(15, 2)
-  status          String        @default("PENDING") // PENDING, PAID, OVERDUE, PARTIAL
-  penaltyAccumulated Decimal    @db.Decimal(15, 2) @default(0.00)
-  daysOverdue     Int           @default(0)
-  
-  payments        Payment[]
-  
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@index([loanId])
-  @@map("emischedule")
-}
-
-enum CommissionStatus {
-  PENDING
-  PAID
-}
-
-enum PayoutStatus {
-  PENDING
-  COMPLETED
-  REJECTED
-}
-
-model Payout {
-  id          Int          @id @default(autoincrement())
-  agentId     Int
-  agent       User         @relation(fields: [agentId], references: [id])
-  amount      Decimal      @db.Decimal(15, 2)
-  status      PayoutStatus @default(PENDING)
-  method      String?
-  trxId       String?      @unique
-  processedAt DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  @@map("payout")
-}
-
-model Commission {
-  id         Int              @id @default(autoincrement())
-  agentId    Int
-  agent      User             @relation("AgentCommissions", fields: [agentId], references: [id])
-  borrowerId Int
-  borrower   User             @relation("BorrowerCommissions", fields: [borrowerId], references: [id])
-  loanId     Int
-  loan       Loan             @relation("LoanCommissions", fields: [loanId], references: [id])
-  
-  amount     Decimal          @db.Decimal(15, 2)
-  percentage Decimal          @db.Decimal(5, 2)
-  
-  status     CommissionStatus @default(PENDING)
-  paymentId  Int?
-  
-  createdAt  DateTime         @default(now())
-  @@map("commission")
-}
-
-model Collateral {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  name      String   @default("UNNAMED_ASSET")
-  type      String   @default("FILE")
-  imageUrl  String
-  verified  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  @@map("collateral")
-}
-
-// ─── Notification ───────────────────────────
-enum NotificationType {
-  SMS
-  EMAIL
-  SYSTEM
-}
-
-model Notification {
-  id        Int              @id @default(autoincrement())
-  userId    Int
-  user      User             @relation(fields: [userId], references: [id])
-  loanId    Int?
-  title     String
-  message   String           @db.Text
-  type      NotificationType @default(SYSTEM)
-  status    String           @default("SENT") // SENT, FAILED
-  error     String?          @db.Text
-  isRead    Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  @@map("notification")
-}
-
-// ─── Settings (System-wide config) ──────────
-model Settings {
-  id        Int      @id @default(autoincrement())
-  key       String   @unique
-  value     String   @db.Text
-  label     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  @@map("settings")
-}

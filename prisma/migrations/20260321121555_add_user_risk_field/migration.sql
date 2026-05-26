@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `user` ADD COLUMN `risk` ENUM('GREEN', 'AMBER', 'RED') NOT NULL DEFAULT 'GREEN';
