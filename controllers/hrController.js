@@ -390,57 +390,19 @@ exports.getRemittances = async (req, res) => {
     return res.status(403).json({ message: 'Forbidden' });
   }
 
-  const { period } = req.query; // format: YYYY-MM, YYYY-WXX, or YYYY-MM-DD
+  const { period } = req.query; // format: YYYY-MM
   const now = new Date();
-  
-  let startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-  let endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  let weekNumber = null;
-
-  if (period) {
-    if (period.includes('-W')) {
-      // Weekly format e.g., 2026-W12
-      const [y, w] = period.split('-W').map(Number);
-      weekNumber = w;
-      // Rough approximation of week start/end for filtering
-      const simple = new Date(y, 0, 1 + (w - 1) * 7);
-      startDate = new Date(simple.setDate(simple.getDate() - simple.getDay()));
-      endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 7);
-    } else if (period.split('-').length === 3) {
-      // Daily format e.g., 2026-05-15
-      const [y, m, d] = period.split('-').map(Number);
-      startDate = new Date(y, m - 1, d);
-      endDate = new Date(y, m - 1, d + 1);
-      // Determine week number for this date
-      const oneJan = new Date(y, 0, 1);
-      const numberOfDays = Math.floor((startDate - oneJan) / (24 * 60 * 60 * 1000));
-      weekNumber = Math.ceil((startDate.getDay() + 1 + numberOfDays) / 7);
-    } else {
-      // Monthly format e.g., 2026-05
-      const [y, m] = period.split('-').map(Number);
-      startDate = new Date(y, m - 1, 1);
-      endDate = new Date(y, m, 1);
-    }
-  }
+  const [year, month] = period ? period.split('-').map(Number) : [now.getFullYear(), now.getMonth() + 1];
 
   try {
-    const userCompany = req.user.role === 'hr' ? req.user.company : undefined;
-    
-    // Fetch company to get fortnight config
-    let companyRecord = null;
-    if (userCompany) {
-      companyRecord = await prisma.company.findUnique({ where: { name: userCompany } });
-    }
-
     const installments = await prisma.installment.findMany({
       where: {
         loan: {
-          company: userCompany
+          company: req.user.role === 'hr' ? req.user.company : undefined
         },
         dueDate: {
-          gte: startDate,
-          lt: endDate
+          gte: new Date(year, month - 1, 1),
+          lt: new Date(year, month, 1)
         }
       },
       include: {
@@ -449,21 +411,7 @@ exports.getRemittances = async (req, res) => {
         }
       }
     });
-
-    // Fortnight Cycle Filtering
-    const fortnightCycle = companyRecord?.fortnightCycle || 'N/A';
-    const isEvenWeek = weekNumber !== null ? (weekNumber % 2 === 0) : null;
-    
-    const filteredInstallments = installments.filter(i => {
-      const freq = i.loan.metadata?.financialInfo?.salaryFrequency;
-      if (freq === 'Fortnightly' && weekNumber !== null && fortnightCycle !== 'N/A') {
-        if (fortnightCycle === 'Even Weeks' && !isEvenWeek) return false;
-        if (fortnightCycle === 'Odd Weeks' && isEvenWeek) return false;
-      }
-      return true;
-    });
-
-    res.json(filteredInstallments.map(i => ({
+    res.json(installments.map(i => ({
       id: i.reference,
       loanReference: i.loan.reference,
       name: (i.loan.employeeName && i.loan.employeeName !== 'Unknown')
@@ -526,22 +474,7 @@ exports.updateCompanyProfile = async (req, res) => {
   }
 
   const companyName = req.user.role === 'hr' ? req.user.company : req.body.companyName;
-  const {
-    address,
-    contactPeople,
-    divisions,
-    specimenSignatureUrl,
-    authorizedSignatories,
-    fortnightCycle,
-    agreement_type,
-    authorized_signatory_name,
-    authorized_signatory_designation,
-    authorized_signatory_email,
-    authorized_signatory_phone,
-    authorized_signatory_signature,
-    latitude,
-    longitude
-  } = req.body;
+  const { address, contactPeople, divisions, specimenSignatureUrl, authorizedSignatories } = req.body;
 
   try {
     const updated = await prisma.company.update({
@@ -552,15 +485,6 @@ exports.updateCompanyProfile = async (req, res) => {
         divisions,
         specimenSignatureUrl,
         authorizedSignatories,
-        fortnightCycle,
-        agreement_type,
-        authorized_signatory_name,
-        authorized_signatory_designation,
-        authorized_signatory_email,
-        authorized_signatory_phone,
-        authorized_signatory_signature,
-        latitude: (latitude !== undefined && latitude !== null) ? parseFloat(latitude) : null,
-        longitude: (longitude !== undefined && longitude !== null) ? parseFloat(longitude) : null,
         updatedAt: new Date()
       }
     });
@@ -736,7 +660,7 @@ exports.uploadEmployeeList = async (req, res) => {
         approxTotalEmployees: parsedEmployeeNumbers.length,
         employeeNumbers: parsedEmployeeNumbers,
         lastEmployeeUploadDate: new Date(),
-        fortnightCycle: req.body.fortnightCycle !== undefined ? req.body.fortnightCycle : undefined
+        updatedAt: new Date()
       }
     });
 
@@ -744,8 +668,7 @@ exports.uploadEmployeeList = async (req, res) => {
       message: 'Staff roster uploaded and verified successfully!',
       approxTotalEmployees: updatedCompany.approxTotalEmployees,
       lastEmployeeUploadDate: updatedCompany.lastEmployeeUploadDate,
-      employeeNumbers: updatedCompany.employeeNumbers,
-      fortnightCycle: updatedCompany.fortnightCycle
+      employeeNumbers: updatedCompany.employeeNumbers
     });
   } catch (error) {
     console.error('Upload Employee List Error:', error);

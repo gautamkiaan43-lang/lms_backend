@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model auditlog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  user      String
+  note      String?
+  entityId  String?
+  createdAt DateTime @default(now())
+}
+
+model installment {
+  id        Int      @id @default(autoincrement())
+  reference String   @unique(map: "Installment_reference_key")
+  amount    Float
+  paidAmount Float   @default(0)
+  status    String   @default("PENDING")
+  dueDate   DateTime
+  loanId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  note      String?   @db.Text
+  loan      loan     @relation(fields: [loanId], references: [id], map: "Installment_loanId_fkey")
+
+  @@index([loanId], map: "Installment_loanId_fkey")
+}
+
+model loan {
+  id            Int           @id @default(autoincrement())
+  reference     String        @unique(map: "Loan_reference_key")
+  amount        Float
+  status        String        @default("pending")
+  userId        Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime @updatedAt
+  company       String
+  employeeEmail String
+  employeeName  String
+  stage         String        @default("SUBMITTED")
+  metadata      Json?
+  documentUrls  Json?
+  kickbackRate  Float?
+  discountRate  Float?
+  kickbackType  String?       @default("PERCENTAGE")
+  commissionAmount Float?      @default(0)
+  discountAmount Float?        @default(0)
+  installment   installment[]
+  user          user          @relation(fields: [userId], references: [id], map: "Loan_userId_fkey")
+
+  @@index([userId], map: "Loan_userId_fkey")
+}
+
+model user {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique(map: "User_email_key")
+  password  String
+  name      String?
+  phone     String?
+  avatarUrl String?
+  role      String   @default("employee")
+  company   String?
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  loan      loan[]
+}
+
+model company {
+  id                    Int      @id @default(autoincrement())
+  name                  String   @unique
+  employees             Int      @default(0)
+  status                String   @default("Active")
+  creditLimit           String   @default("R 0")
+  address               String?
+  contactPeople         Json?
+  divisions             Json?
+  specimenSignatureUrl  String?  @db.LongText
+  authorizedSignatories Json?
+  kickbackRate          Float?
+  discountRate          Float?
+  kickbackType          String?  @default("PERCENTAGE")
+  commissionAmount      Float?   @default(0)
+  discountAmount        Float?   @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Custom Fields for Employee Verification & Stats
+  approxTotalEmployees  Int      @default(0)
+  employeeNumbers       Json?
+  lastEmployeeUploadDate DateTime?
+  fortnightCycle        String?  @default("N/A")
+
+  // SLA & Authorized Signatory Module Fields
+  agreement_type                  String?
+  authorized_signatory_name       String?
+  authorized_signatory_designation String?
+  authorized_signatory_email      String?
+  authorized_signatory_phone      String?
+  authorized_signatory_signature  String?  @db.LongText
+
+  latitude                        Float?
+  longitude                       Float?
+}
+
+model deductionschedule {
+  id          Int      @id @default(autoincrement())
+  company     String
+  period      String
+  frequency   String
+  fileName    String
+  status      String   @default("PENDING")
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  details     Json
+}
+
+model document {
+  id           Int      @id @default(autoincrement())
+  fileName     String
+  fileUrl      String   @db.VarChar(500)
+  fileType     String
+  category     String
+  uploadedBy   String
+  companyName  String?
+  employeeName String?
+  loanRef      String?
+  status       String   @default("Active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+

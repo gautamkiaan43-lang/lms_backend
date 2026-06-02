@@ -27,21 +27,11 @@ const avatarStorage = new CloudinaryStorage({
   },
 });
 
-const signatureStorage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'lms_signatures',
-    allowed_formats: ['jpg', 'png', 'jpeg'],
-  },
-});
-
 const uploadDocument = multer({ storage: documentStorage });
 const uploadAvatar = multer({ storage: avatarStorage });
-const uploadSignature = multer({ storage: signatureStorage });
 
 module.exports = {
   uploadDocument,
   uploadAvatar,
-  uploadSignature,
   cloudinary
 };

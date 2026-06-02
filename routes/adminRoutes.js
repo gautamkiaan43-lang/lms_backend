@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const authenticateToken = require('../middleware/auth');
-const { uploadSignature } = require('../middleware/upload');
 
 router.use(authenticateToken);
 
@@ -19,7 +18,6 @@ router.delete('/users/:id', adminController.deleteUser);
 router.get('/companies', adminController.getAllCompanies);
 router.post('/companies', adminController.createCompany);
 router.patch('/companies/:id', adminController.updateCompany);
-router.post('/companies/:id/signature', uploadSignature.single('signature'), adminController.uploadSignature);
 
 router.get('/roles', adminController.getRoles);
 router.get('/applications', adminController.getAllApplications);

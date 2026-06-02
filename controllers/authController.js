@@ -110,9 +110,7 @@ exports.getCompanyConfig = async (req, res) => {
     }
     res.json({
       discountAmount: comp.discountAmount || 0,
-      discountRate:   comp.discountRate   || 0,
-      address:        comp.address        || null,
-      contactPeople:  comp.contactPeople  || null,
+      discountRate: comp.discountRate || 0
     });
   } catch (error) {
     console.error('getCompanyConfig Error:', error);

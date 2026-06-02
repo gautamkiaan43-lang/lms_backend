@@ -56,10 +56,9 @@ exports.apply = async (req, res) => {
       }
     }
 
-    const reference = lReq.reference || `LMS-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     const loan = await prisma.loan.create({
       data: {
-        reference,
+        reference: `LMS-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
         amount: parseFloat(lReq.amount),
         userId: req.user.id,
         company: eInfo.employerName || 'Unknown',
@@ -116,20 +115,7 @@ exports.getLoanById = async (req, res) => {
       return res.status(404).json({ message: 'Application not found' });
     }
 
-    // Retrieve company details for the signatory information
-    let companyRecord = null;
-    if (loan.company) {
-      companyRecord = await prisma.company.findUnique({
-        where: { name: loan.company }
-      });
-    }
-
-    const loanWithCompany = {
-      ...loan,
-      companyRecord
-    };
-
-    res.json(loanWithCompany);
+    res.json(loan);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

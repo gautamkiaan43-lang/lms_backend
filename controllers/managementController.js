@@ -98,7 +98,7 @@ exports.getGovernanceReport = async (req, res) => {
       totalCount: 0,
       totalAmount: 0,
       frequency: { Weekly: 0, Fortnightly: 0, Monthly: 0 },
-      amountRanges: { tier1: 0, tier2: 0, tier3: 0, tier4: 0 }
+      amountRanges: { low: 0, mid: 0, high: 0 }
     };
 
     const reasonCounts = {};
@@ -114,11 +114,10 @@ exports.getGovernanceReport = async (req, res) => {
       if (freq.toLowerCase().includes('week')) freqKey = 'Weekly';
       else if (freq.toLowerCase().includes('fortnight')) freqKey = 'Fortnightly';
 
-      // Amount Range mapping: tier1 (400-1000), tier2 (1001-3000), tier3 (3001-5000), tier4 (5000+)
-      let rangeKey = 'tier1';
-      if (amt > 5000) rangeKey = 'tier4';
-      else if (amt > 3000) rangeKey = 'tier3';
-      else if (amt > 1000) rangeKey = 'tier2';
+      // Amount Range mapping: low (400-1000), mid (1000-3000), high (3000+)
+      let rangeKey = 'low';
+      if (amt >= 3000) rangeKey = 'high';
+      else if (amt >= 1000) rangeKey = 'mid';
 
       // Initialize company details if not present
       if (!companyDetails[companyName]) {
@@ -127,7 +126,7 @@ exports.getGovernanceReport = async (req, res) => {
           totalCount: 0,
           totalAmount: 0,
           frequency: { Weekly: 0, Fortnightly: 0, Monthly: 0 },
-          amountRanges: { tier1: 0, tier2: 0, tier3: 0, tier4: 0 },
+          amountRanges: { low: 0, mid: 0, high: 0 },
           reasons: {}
         };
       }
@@ -176,25 +175,18 @@ exports.getGovernanceReport = async (req, res) => {
     const pdiCount = loans.filter(l => l.metadata?.isPDI || l.metadata?.personalInfo?.isPreviouslyDisadvantaged).length;
     const pdiRate = loans.length > 0 ? (pdiCount / loans.length) * 100 : 84.2; // Fallback to realistic mock if field not used yet
 
-    // Company Penetration (percentage of registered client companies that have at least one loan)
-    const registeredCompanies = await prisma.company.findMany({ select: { name: true } });
-    const registeredCompanyNames = registeredCompanies.map(c => c.name);
-    const activeRegisteredCompanies = new Set(
-      loans.map(l => l.company).filter(name => registeredCompanyNames.includes(name))
-    );
-    const penetration = registeredCompanies.length > 0 
-      ? (activeRegisteredCompanies.size / registeredCompanies.length) * 100 
-      : 0;
+    // Company Penetration
+    const activeCompanyNames = new Set(loans.map(l => l.company));
+    const totalPossibleCompanies = Math.max(companyCount, activeCompanyNames.size);
+    const penetration = totalPossibleCompanies > 0 ? (activeCompanyNames.size / totalPossibleCompanies) * 100 : 0;
 
     // Employee Penetration across all companies (Registered / Approx uploaded)
     const companiesList = await prisma.company.findMany();
     let totalEmployeesCount = 0;
     let totalApproxCount = 0;
     companiesList.forEach(c => {
-      const regCount = c.employees || 0;
-      const approxCount = Math.max(c.approxTotalEmployees || 0, regCount);
-      totalEmployeesCount += regCount;
-      totalApproxCount += approxCount;
+      totalEmployeesCount += c.employees || 0;
+      totalApproxCount += c.approxTotalEmployees || 0;
     });
     const employeePenetrationVal = totalApproxCount > 0 ? ((totalEmployeesCount / totalApproxCount) * 100) : 0;
 

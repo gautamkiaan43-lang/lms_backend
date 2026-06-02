@@ -11,8 +11,7 @@ router.post('/apply', uploadDocument.fields([
   { name: 'latestPayslip', maxCount: 1 },
   { name: 'bankStatement', maxCount: 1 },
   { name: 'otherDocument', maxCount: 1 },
-  { name: 'signature', maxCount: 1 },
-  { name: 'applicationForm', maxCount: 1 }
+  { name: 'signature', maxCount: 1 }
 ]), loanController.apply);
 
 router.get('/', loanController.getAllLoans);
