@@ -95,6 +95,18 @@ model company {
   approxTotalEmployees  Int      @default(0)
   employeeNumbers       Json?
   lastEmployeeUploadDate DateTime?
+  fortnightCycle        String?  @default("N/A")
+
+  // SLA & Authorized Signatory Module Fields
+  agreement_type                  String?
+  authorized_signatory_name       String?
+  authorized_signatory_designation String?
+  authorized_signatory_email      String?
+  authorized_signatory_phone      String?
+  authorized_signatory_signature  String?  @db.LongText
+
+  latitude                        Float?
+  longitude                       Float?
 }
 
 model deductionschedule {
