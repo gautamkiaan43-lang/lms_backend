@@ -39,6 +39,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://loannew.softwaredemolive.live',
   'https://loannew.softwaredemolive.live',
+  'https://sanjayinvestmentcorporation.com'
 ];
 
 app.use(cors({
