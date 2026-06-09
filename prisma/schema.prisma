@@ -56,7 +56,7 @@ model User {
   id         Int      @id @default(autoincrement())
   name       String
   email      String   @unique
-  phone      String   @unique
+  phone      String?  @unique
   password   String
   role       Role     @default(BORROWER)
   isVerified Boolean  @default(false)
@@ -133,12 +133,12 @@ model Loan {
   agent     User?      @relation("LoanAgent", fields: [agentId], references: [id])
   
   // Financial Terms
-  principalAmount   Decimal @db.Decimal(15, 2)
-  currentPrincipal  Decimal @db.Decimal(15, 2)
-  initiationFeeRate Decimal @db.Decimal(5, 2) // %
-  initiationFee     Decimal @db.Decimal(15, 2)
-  disbursedAmount   Decimal @db.Decimal(15, 2)
-  interestRate      Decimal @db.Decimal(5, 2) // % monthly
+  principalAmount   Decimal @db.Decimal(15, 2) @default(0.00)
+  currentPrincipal  Decimal @db.Decimal(15, 2) @default(0.00)
+  initiationFeeRate Decimal @db.Decimal(5, 2) @default(0.00) // %
+  initiationFee     Decimal @db.Decimal(15, 2) @default(0.00)
+  disbursedAmount   Decimal @db.Decimal(15, 2) @default(0.00)
+  interestRate      Decimal @db.Decimal(5, 2) @default(0.00) // % monthly
   
   dueDay            Int     @default(1)
   graceDays         Int     @default(0)
