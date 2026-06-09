@@ -24,7 +24,6 @@ async function ensureDemoUsers() {
           name: user.name,
           phone: user.phone,
           role: user.role,
-          password: hashed,
           isVerified: true,
           isApproved: true,
           status: 'active',

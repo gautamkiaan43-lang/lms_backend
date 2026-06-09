@@ -61,10 +61,10 @@ const generateLoanStatement = async (loanId) => {
         <div class="grid">
           <div class="item"><div class="label">Loan ID:</div><div class="value">#${loan.id}</div></div>
           <div class="item"><div class="label">Status:</div><div class="value font-bold">${loan.status}</div></div>
-          <div class="item"><div class="label">Principal Amount:</div><div class="value">K${Number(loan.principalAmount).toLocaleString()}</div></div>
+          <div class="item"><div class="label">Principal Amount:</div><div class="value">₹${Number(loan.principalAmount).toLocaleString()}</div></div>
           <div class="item"><div class="label">Interest Rate:</div><div class="value">${loan.interestRate}% Monthly</div></div>
-          <div class="item"><div class="label">Initiation Fee:</div><div class="value">K${Number(loan.initiationFee).toLocaleString()}</div></div>
-          <div class="item"><div class="label">Currently Owed:</div><div class="value font-bold">K${Number(loan.currentPrincipal).toLocaleString()}</div></div>
+          <div class="item"><div class="label">Initiation Fee:</div><div class="value">₹${Number(loan.initiationFee).toLocaleString()}</div></div>
+          <div class="item"><div class="label">Currently Owed:</div><div class="value font-bold">₹${Number(loan.currentPrincipal).toLocaleString()}</div></div>
           <div class="item"><div class="label">Next Due Date:</div><div class="value">${loan.dueDate ? formatDateIN(loan.dueDate, 'N/A') : 'N/A'}</div></div>
         </div>
       </div>
@@ -86,7 +86,7 @@ const generateLoanStatement = async (loanId) => {
               <tr>
                 <td>${formatDateIN(p.createdAt, 'N/A')}</td>
                 <td>${p.type}</td>
-                <td>K${Number(p.totalCollected).toLocaleString()}</td>
+                <td>₹${Number(p.totalCollected).toLocaleString()}</td>
                 <td>${p.status}</td>
                 <td>${p.method}</td>
               </tr>

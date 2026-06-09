@@ -1,0 +1,88 @@
+{
+	"info": {
+		"_postman_id": "c8b9d5a2-1f4e-4d1b-9b2a-6e9f8d4e7c12",
+		"name": "Loan App Auth API Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login (Admin)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:5000/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				},
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@lendanet.com\",\n  \"password\": \"password123\"\n}"
+				}
+			}
+		},
+		{
+			"name": "Quick Login (Admin)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:5000/api/auth/quick-login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"auth",
+						"quick-login"
+					]
+				},
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"role\": \"ADMIN\"\n}"
+				}
+			}
+		},
+		{
+			"name": "Get Demo Credentials (Admin)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/auth/demo-credentials/ADMIN",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"auth",
+						"demo-credentials",
+						"ADMIN"
+					]
+				}
+			}
+		}
+	]
+}
