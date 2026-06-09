@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and prisma directory
 COPY package*.json ./
+COPY prisma ./prisma/
 
 # Install dependencies, skipping puppeteer's chromium download to use system Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
